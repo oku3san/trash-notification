@@ -1,7 +1,9 @@
 package main
 
 import (
+  "fmt"
   "github.com/aws/aws-cdk-go/awscdk/v2"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
   "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
   "github.com/aws/constructs-go/constructs/v10"
@@ -21,13 +23,23 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
   // The code that defines your stack goes here
 
-  awssqs.NewQueue(stack, jsii.String("trashNotificationQueue"), &awssqs.QueueProps{
+  trashNotificationQueue := awssqs.NewQueue(stack, jsii.String("trashNotificationQueue"), &awssqs.QueueProps{
     VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
   })
 
-  awsiam.NewRole(stack, jsii.String("trashNotificationRole"), &awsiam.RoleProps{
+  trashNotificationRole := awsiam.NewRole(stack, jsii.String("trashNotificationRole"), &awsiam.RoleProps{
     AssumedBy: awsiam.NewServicePrincipal(jsii.String("apigateway.amazonaws.com"), nil),
   })
+
+  trashNotificationAPiGw := awsapigateway.NewRestApi(stack, jsii.String("trashNotificationAPiGw"), nil)
+  trashNotificationAPiGw.Root().AddMethod(jsii.String("POST"), awsapigateway.NewAwsIntegration(&awsapigateway.AwsIntegrationProps{
+    Service:               jsii.String("sqs"),
+    IntegrationHttpMethod: jsii.String("POST"),
+    Path:                  jsii.String(fmt.Sprintf("%s/%s", *awscdk.Stack_Of(stack).Account(), *trashNotificationQueue.QueueName())),
+    Options: &awsapigateway.IntegrationOptions{
+      CredentialsRole: trashNotificationRole,
+    },
+  }), nil)
 
   return stack
 }
