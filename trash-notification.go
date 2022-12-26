@@ -1,7 +1,6 @@
 package main
 
 import (
-  "fmt"
   "github.com/aws/aws-cdk-go/awscdk/v2"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
@@ -29,17 +28,38 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
   trashNotificationRole := awsiam.NewRole(stack, jsii.String("trashNotificationRole"), &awsiam.RoleProps{
     AssumedBy: awsiam.NewServicePrincipal(jsii.String("apigateway.amazonaws.com"), nil),
+    ManagedPolicies: &[]awsiam.IManagedPolicy{
+      awsiam.ManagedPolicy_FromAwsManagedPolicyName(jsii.String("AmazonSQSFullAccess")),
+    },
   })
 
-  trashNotificationAPiGw := awsapigateway.NewRestApi(stack, jsii.String("trashNotificationAPiGw"), nil)
-  trashNotificationAPiGw.Root().AddMethod(jsii.String("POST"), awsapigateway.NewAwsIntegration(&awsapigateway.AwsIntegrationProps{
-    Service:               jsii.String("sqs"),
-    IntegrationHttpMethod: jsii.String("POST"),
-    Path:                  jsii.String(fmt.Sprintf("%s/%s", *awscdk.Stack_Of(stack).Account(), *trashNotificationQueue.QueueName())),
-    Options: &awsapigateway.IntegrationOptions{
-      CredentialsRole: trashNotificationRole,
+  trashNotificationAPiGw := awsapigateway.NewRestApi(stack, jsii.String("trashNotificationAPiGw"), &awsapigateway.RestApiProps{
+    DeployOptions: &awsapigateway.StageOptions{
+      DataTraceEnabled: jsii.Bool(true),
+      LoggingLevel:     awsapigateway.MethodLoggingLevel_INFO,
     },
-  }), nil)
+  })
+  trashNotificationAPiGw.Root().
+    AddMethod(jsii.String("POST"), awsapigateway.NewAwsIntegration(&awsapigateway.AwsIntegrationProps{
+      Service:               jsii.String("sqs"),
+      IntegrationHttpMethod: jsii.String("POST"),
+      Path:                  jsii.String(*awscdk.Stack_Of(stack).Account() + "/" + *trashNotificationQueue.QueueName()),
+      Options: &awsapigateway.IntegrationOptions{
+        CredentialsRole: trashNotificationRole,
+        IntegrationResponses: &[]*awsapigateway.IntegrationResponse{
+          &awsapigateway.IntegrationResponse{
+            StatusCode: jsii.String("200"),
+          },
+        },
+      },
+    }), nil).
+    AddMethodResponse(&awsapigateway.MethodResponse{
+      StatusCode: jsii.String("200"),
+      ResponseModels: &map[string]awsapigateway.IModel{
+        "application/json": awsapigateway.Model_EMPTY_MODEL(),
+      },
+      ResponseParameters: nil,
+    })
 
   return stack
 }
