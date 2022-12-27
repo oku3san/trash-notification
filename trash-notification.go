@@ -35,8 +35,8 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
   trashNotificationAPiGw := awsapigateway.NewRestApi(stack, jsii.String("trashNotificationAPiGw"), &awsapigateway.RestApiProps{
     DeployOptions: &awsapigateway.StageOptions{
-      DataTraceEnabled: jsii.Bool(true),
-      LoggingLevel:     awsapigateway.MethodLoggingLevel_INFO,
+      //DataTraceEnabled: jsii.Bool(true),
+      //LoggingLevel:     awsapigateway.MethodLoggingLevel_INFO,
     },
   })
   trashNotificationAPiGw.Root().
@@ -50,6 +50,12 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
           &awsapigateway.IntegrationResponse{
             StatusCode: jsii.String("200"),
           },
+        },
+        RequestParameters: &map[string]*string{
+          "integration.request.header.Content-Type": jsii.String("'application/x-www-form-urlencoded'"),
+        },
+        RequestTemplates: &map[string]*string{
+          "application/json": jsii.String("Action=SendMessage&MessageBody=$input.body"),
         },
       },
     }), nil).
