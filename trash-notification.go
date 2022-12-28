@@ -1,12 +1,18 @@
 package main
 
 import (
+  "fmt"
   "github.com/aws/aws-cdk-go/awscdk/v2"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awss3assets"
   "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
   "github.com/aws/constructs-go/constructs/v10"
   "github.com/aws/jsii-runtime-go"
+  "os/exec"
+  "path/filepath"
+  "runtime"
 )
 
 type TrashNotificationStackProps struct {
@@ -67,7 +73,33 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       ResponseParameters: nil,
     })
 
+  awslambda.NewFunction(stack, jsii.String("lambda"), &awslambda.FunctionProps{
+    Runtime: awslambda.Runtime_GO_1_X(),
+    Code: awslambda.AssetCode_FromAsset(jsii.String("lambda"), &awss3assets.AssetOptions{
+      Bundling: &awscdk.BundlingOptions{
+        Image:   awslambda.Runtime_GO_1_X().BundlingImage(),
+        Command: jsii.Strings("bash", "-c", "GOOS=linux GOARCH=amd64 go build -o handler"),
+        Local:   &LocalBundling{},
+      },
+    }),
+    Handler: jsii.String("main"),
+    Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
+  })
+
   return stack
+}
+
+type LocalBundling struct{}
+
+func (*LocalBundling) TryBundle(outputDir *string, options *awscdk.BundlingOptions) *bool {
+  path := filepath.Join(*outputDir, "handler")
+  var err error
+  if runtime.GOOS == "windows" {
+    err = exec.Command("cmd", "/c", fmt.Sprintf("set GOOS=linux&set GOARCH=amd64&cd lambda&go build -o %s", path)).Run()
+  } else {
+    err = exec.Command("bash", "-c", fmt.Sprintf("GOOS=linux GOARCH=amd64 cd lambda && go build -o %s", path)).Run()
+  }
+  return jsii.Bool(err == nil)
 }
 
 func main() {
