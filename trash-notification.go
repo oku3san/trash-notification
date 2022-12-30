@@ -5,6 +5,7 @@ import (
   "github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awslambdaeventsources"
   "github.com/aws/aws-cdk-go/awscdk/v2/awss3assets"
   "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
   "github.com/aws/constructs-go/constructs/v10"
@@ -69,7 +70,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       ResponseParameters: nil,
     })
 
-  awslambda.NewFunction(stack, jsii.String("getMessageFromSqs"), &awslambda.FunctionProps{
+  getMessageFromSqs := awslambda.NewFunction(stack, jsii.String("getMessageFromSqs"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
     Code: awslambda.AssetCode_FromAsset(jsii.String("lambda"), &awss3assets.AssetOptions{
       Bundling: &awscdk.BundlingOptions{
@@ -81,6 +82,13 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Handler: jsii.String("main"),
     Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
   })
+
+  getMessageFromSqs.AddEventSource(awslambdaeventsources.NewSqsEventSource(trashNotificationQueue, &awslambdaeventsources.SqsEventSourceProps{
+    BatchSize: jsii.Number(1),
+    Enabled:   jsii.Bool(true),
+  }))
+
+  trashNotificationQueue.GrantSendMessages(getMessageFromSqs.Role())
 
   return stack
 }
