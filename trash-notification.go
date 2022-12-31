@@ -88,8 +88,6 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Enabled:   jsii.Bool(true),
   }))
 
-  trashNotificationQueue.GrantSendMessages(getMessageFromSqs.Role())
-
   return stack
 }
 
