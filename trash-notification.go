@@ -3,6 +3,7 @@ package main
 import (
   "github.com/aws/aws-cdk-go/awscdk/v2"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambdaeventsources"
@@ -27,6 +28,15 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
   trashNotificationQueue := awssqs.NewQueue(stack, jsii.String("trashNotificationQueue"), &awssqs.QueueProps{
     VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
+  })
+
+  awsdynamodb.NewTable(stack, jsii.String("trashNotificationTable"), &awsdynamodb.TableProps{
+    PartitionKey: &awsdynamodb.Attribute{
+      Name: jsii.String("Id"),
+      Type: awsdynamodb.AttributeType_NUMBER,
+    },
+    BillingMode:   awsdynamodb.BillingMode_PAY_PER_REQUEST,
+    RemovalPolicy: awscdk.RemovalPolicy_RETAIN,
   })
 
   trashNotificationRole := awsiam.NewRole(stack, jsii.String("trashNotificationRole"), &awsiam.RoleProps{
