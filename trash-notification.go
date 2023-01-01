@@ -83,7 +83,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
   setStatus := awslambda.NewFunction(stack, jsii.String("setStatus"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
-    Code: awslambda.AssetCode_FromAsset(jsii.String("lambda/set-status"), &awss3assets.AssetOptions{
+    Code: awslambda.AssetCode_FromAsset(jsii.String("src/lambda/set-status"), &awss3assets.AssetOptions{
       Bundling: &awscdk.BundlingOptions{
         Image:   awslambda.Runtime_GO_1_X().BundlingImage(),
         Command: jsii.Strings("bash", "-c", "GOOS=linux GOARCH=amd64 go build -o /asset-output/main"),
