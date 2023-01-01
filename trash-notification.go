@@ -7,6 +7,7 @@ import (
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambdaeventsources"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awslogs"
   "github.com/aws/aws-cdk-go/awscdk/v2/awss3assets"
   "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
   "github.com/aws/constructs-go/constructs/v10"
@@ -60,7 +61,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       Options: &awsapigateway.IntegrationOptions{
         CredentialsRole: trashNotificationRole,
         IntegrationResponses: &[]*awsapigateway.IntegrationResponse{
-          &awsapigateway.IntegrationResponse{
+          {
             StatusCode: jsii.String("200"),
           },
         },
@@ -80,20 +81,21 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       ResponseParameters: nil,
     })
 
-  getMessageFromSqs := awslambda.NewFunction(stack, jsii.String("getMessageFromSqs"), &awslambda.FunctionProps{
+  setStatus := awslambda.NewFunction(stack, jsii.String("setStatus"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
-    Code: awslambda.AssetCode_FromAsset(jsii.String("lambda"), &awss3assets.AssetOptions{
+    Code: awslambda.AssetCode_FromAsset(jsii.String("lambda/set-status"), &awss3assets.AssetOptions{
       Bundling: &awscdk.BundlingOptions{
         Image:   awslambda.Runtime_GO_1_X().BundlingImage(),
         Command: jsii.Strings("bash", "-c", "GOOS=linux GOARCH=amd64 go build -o /asset-output/main"),
         User:    jsii.String("root"),
       },
     }),
-    Handler: jsii.String("main"),
-    Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
+    Handler:      jsii.String("main"),
+    Timeout:      awscdk.Duration_Seconds(jsii.Number(30)),
+    LogRetention: awslogs.RetentionDays_ONE_DAY,
   })
 
-  getMessageFromSqs.AddEventSource(awslambdaeventsources.NewSqsEventSource(trashNotificationQueue, &awslambdaeventsources.SqsEventSourceProps{
+  setStatus.AddEventSource(awslambdaeventsources.NewSqsEventSource(trashNotificationQueue, &awslambdaeventsources.SqsEventSourceProps{
     BatchSize: jsii.Number(1),
     Enabled:   jsii.Bool(true),
   }))
