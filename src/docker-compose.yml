@@ -1,19 +1,14 @@
 services:
-  dynamodb:
-    image: amazon/dynamodb-local
-    container_name: dynamodb
+  localstack:
+    container_name: "localstack_main"
+    image: localstack/localstack
     ports:
-      - 8000:8000
-    command: -jar DynamoDBLocal.jar -dbPath /data -sharedDb
-    volumes:
-      - $PWD/dynamodb/data:/data
-
-  dynamodb-admin:
-    container_name: dynamodb-admin
-    image: aaronshaf/dynamodb-admin:latest
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
     environment:
-      - DYNAMO_ENDPOINT=dynamodb:8000
-    ports:
-      - 8001:8001
-    depends_on:
-      - dynamodb
+      - DEBUG=${DEBUG-}
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "./volume:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

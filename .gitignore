@@ -12,8 +12,9 @@
 *.out
 
 # go.sum should be committed
-!go.sum
+!infra/go.sum
 
 # CDK asset staging directory
 .cdk.staging
-cdk.out
+infra/cdk.out
+src/volume/*
