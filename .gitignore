@@ -17,4 +17,4 @@
 # CDK asset staging directory
 .cdk.staging
 infra/cdk.out
-src/volume/*
+src/localstack/*
