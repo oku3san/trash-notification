@@ -6,6 +6,10 @@ import (
   "fmt"
   "github.com/aws/aws-lambda-go/events"
   "github.com/aws/aws-lambda-go/lambda"
+  "github.com/aws/aws-sdk-go/aws"
+  "github.com/aws/aws-sdk-go/aws/session"
+  "github.com/guregu/dynamo"
+  "os"
 )
 
 type Message struct {
@@ -39,7 +43,46 @@ type SqsMessageFromLine struct {
   Events      Events `json:"events"`
 }
 
+type Item struct {
+  Id     int
+  MyText string
+}
+
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
+
+  // クライアントの設定
+  dynamoDbRegion := "ap-northeast-1"
+  disableSsl := false
+
+  // DynamoDB Localを利用する場合はEndpointのURLを設定する
+  dynamoDbEndpoint := os.Getenv("dynamoDbEndpoint")
+  if len(dynamoDbEndpoint) != 0 {
+    disableSsl = true
+  }
+
+  // デフォルトでは東京リージョンを指定
+  if len(dynamoDbRegion) == 0 {
+    dynamoDbRegion = "ap-northeast-1"
+  }
+
+  db := dynamo.New(session.New(), &aws.Config{
+    Region:     aws.String(dynamoDbRegion),
+    Endpoint:   aws.String(dynamoDbEndpoint),
+    DisableSSL: aws.Bool(disableSsl),
+  })
+
+  table := db.Table(os.Getenv("tableName"))
+
+  // 単純なCRUD - Create
+  item := Item{
+    Id:     0,
+    MyText: "My First Text",
+  }
+
+  if err := table.Put(item).Run(); err != nil {
+    fmt.Printf("Failed to put item[%v]\n", err)
+  }
+
   for _, record := range sqsEvent.Records {
     //fmt.Println(message)
     var sqsMessageFromLine SqsMessageFromLine
