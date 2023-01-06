@@ -7,7 +7,6 @@ import (
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambdaeventsources"
-  "github.com/aws/aws-cdk-go/awscdk/v2/awslogs"
   "github.com/aws/aws-cdk-go/awscdk/v2/awss3assets"
   "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
   "github.com/aws/constructs-go/constructs/v10"
@@ -90,9 +89,9 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
         User:    jsii.String("root"),
       },
     }),
-    Handler:      jsii.String("main"),
-    Timeout:      awscdk.Duration_Seconds(jsii.Number(30)),
-    LogRetention: awslogs.RetentionDays_ONE_DAY,
+    Handler: jsii.String("main"),
+    Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
+    //LogRetention: awslogs.RetentionDays_ONE_DAY,
     Environment: &map[string]*string{
       "tableName":        trashNotificationTable.TableName(),
       "dynamoDbEndpoint": jsii.String("http://localhost:4566"),
