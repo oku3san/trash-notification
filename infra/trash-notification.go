@@ -31,7 +31,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
   })
 
-  awsdynamodb.NewTable(stack, jsii.String("trashNotificationTable"), &awsdynamodb.TableProps{
+  trashNotificationTable := awsdynamodb.NewTable(stack, jsii.String("trashNotificationTable"), &awsdynamodb.TableProps{
     PartitionKey: &awsdynamodb.Attribute{
       Name: jsii.String("Id"),
       Type: awsdynamodb.AttributeType_NUMBER,
@@ -93,6 +93,10 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Handler:      jsii.String("main"),
     Timeout:      awscdk.Duration_Seconds(jsii.Number(30)),
     LogRetention: awslogs.RetentionDays_ONE_DAY,
+    Environment: &map[string]*string{
+      "tableName":        trashNotificationTable.TableName(),
+      "dynamoDbEndpoint": jsii.String("http://localhost:4566"),
+    },
   })
 
   setStatus.AddEventSource(awslambdaeventsources.NewSqsEventSource(trashNotificationQueue, &awslambdaeventsources.SqsEventSourceProps{
