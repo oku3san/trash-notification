@@ -97,6 +97,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       "dynamoDbEndpoint": jsii.String("http://localhost:4566"),
     },
   })
+  trashNotificationTable.GrantReadWriteData(setStatus)
 
   setStatus.AddEventSource(awslambdaeventsources.NewSqsEventSource(trashNotificationQueue, &awslambdaeventsources.SqsEventSourceProps{
     BatchSize: jsii.Number(1),
