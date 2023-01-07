@@ -8,20 +8,8 @@ services:
       - DOCKER_HOST=unix:///var/run/docker.sock
       - DEFAULT_REGION=ap-northeast-1
 #      - DATA_DIR=/tmp/localstack/data
-      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_EXECUTOR=local
       - DEBUG=1
     volumes:
       - "./localstack:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
-
-
-  awslocal dynamodb put-item \
-  --table-name TrashNotificationStack-trashNotificationTableAC-1537fac9 \
-  --item '{ "Name": { "S": "testtest" } }'
-
-
-  awslocal dynamodb create-table \
-  --table-name test \
-  --attribute-definitions AttributeName=Name,AttributeType=S \
-  --key-schema AttributeName=Name,KeyType=HASH \
-  --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1

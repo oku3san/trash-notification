@@ -9,6 +9,7 @@ import (
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/aws/session"
   "github.com/guregu/dynamo"
+  "os"
 )
 
 type Message struct {
@@ -43,7 +44,8 @@ type SqsMessageFromLine struct {
 }
 
 type Test struct {
-  Id int `dynamo:"Id"`
+  Id   int `dynamo:"Id"`
+  Name string
 }
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
@@ -57,15 +59,14 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
   }
 
   db := dynamo.New(sess)
-  table := db.Table("TrashNotificationStack-trashNotificationTableAC-1537fac9")
-  fmt.Println(*&table)
-  //var result Test
-  //err = table.Get("Id", "0").One(&result)
-  //if err != nil {
-  //  fmt.Println(err)
-  //}
-  //
-  //println(result.Id)
+  table := db.Table(os.Getenv("tableName"))
+  var result Test
+  err = table.Get("Id", 0).One(&result)
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  println(result.Id, result.Name)
 
   for _, record := range sqsEvent.Records {
     //fmt.Println(message)
