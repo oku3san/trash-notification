@@ -26,10 +26,12 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
   // The code that defines your stack goes here
 
+  // SQS を作成
   trashNotificationQueue := awssqs.NewQueue(stack, jsii.String("trashNotificationQueue"), &awssqs.QueueProps{
     VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
   })
 
+  // DynamoDB を作成
   trashNotificationTable := awsdynamodb.NewTable(stack, jsii.String("trashNotificationTable"), &awsdynamodb.TableProps{
     PartitionKey: &awsdynamodb.Attribute{
       Name: jsii.String("Id"),
@@ -43,6 +45,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
   })
 
+  // API GW が SQS を呼び出すためのロールを作成
   trashNotificationRole := awsiam.NewRole(stack, jsii.String("trashNotificationRole"), &awsiam.RoleProps{
     AssumedBy: awsiam.NewServicePrincipal(jsii.String("apigateway.amazonaws.com"), nil),
     ManagedPolicies: &[]awsiam.IManagedPolicy{
@@ -50,6 +53,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     },
   })
 
+  // API GW を作成し、SQS と紐付け
   trashNotificationAPiGw := awsapigateway.NewRestApi(stack, jsii.String("trashNotificationAPiGw"), &awsapigateway.RestApiProps{
     DeployOptions: &awsapigateway.StageOptions{
       //DataTraceEnabled: jsii.Bool(true),
@@ -84,6 +88,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       ResponseParameters: nil,
     })
 
+  // Lambda 作成し、DynamoDB の操作権限を付与
   setStatus := awslambda.NewFunction(stack, jsii.String("setStatus"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
     Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/set-status"), &awss3assets.AssetOptions{
@@ -103,6 +108,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   })
   trashNotificationTable.GrantReadWriteData(setStatus)
 
+  // SQS をトリガーとするために SQS と Lambda を紐付け
   setStatus.AddEventSource(awslambdaeventsources.NewSqsEventSource(trashNotificationQueue, &awslambdaeventsources.SqsEventSourceProps{
     BatchSize: jsii.Number(1),
     Enabled:   jsii.Bool(true),
