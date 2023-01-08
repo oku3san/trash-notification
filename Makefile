@@ -14,3 +14,15 @@ setup-data-local:
 		gsed "s/<TableName>/$(TABLENAME)/g" ./src/dynamodb/seed-template.json > ./src/dynamodb/seed.json && \
 		awslocal dynamodb batch-write-item --request-items file://./src/dynamodb/seed.json --region ap-northeast-1 ; \
 		rm ./src/dynamodb/seed.json
+
+.PHONY: deploy-local
+deploy-local:
+	pushd infra && \
+		cdklocal deploy --require-approval never && \
+		popd
+
+.PHONY: deploy
+deploy:
+	pushd infra && \
+		aws-vault exec default -- npx cdk deploy --require-approval never && \
+		popd
