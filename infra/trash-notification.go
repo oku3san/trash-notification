@@ -108,6 +108,15 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Enabled:   jsii.Bool(true),
   }))
 
+  // Output
+  awscdk.NewCfnOutput(stack, jsii.String("dynamoDbName"), &awscdk.CfnOutputProps{
+    Value: trashNotificationTable.TableName(),
+  })
+
+  awscdk.NewCfnOutput(stack, jsii.String("sqsEndpoint"), &awscdk.CfnOutputProps{
+    Value: trashNotificationQueue.QueueUrl(),
+  })
+
   return stack
 }
 
