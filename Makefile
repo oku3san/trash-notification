@@ -4,7 +4,8 @@ init-local:
 	docker compose -f ./src/docker-compose.yml up -d
 	pushd infra && \
 		cdklocal bootstrap && \
-		cdklocal deploy --require-approval never
+		cdklocal deploy --require-approval never && \
+		popd
 	make setup-data-local
 
 .PHONY: setup-data-local
