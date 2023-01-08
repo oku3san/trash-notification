@@ -35,8 +35,12 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       Name: jsii.String("Id"),
       Type: awsdynamodb.AttributeType_NUMBER,
     },
+    SortKey: &awsdynamodb.Attribute{
+      Name: jsii.String("DataType"),
+      Type: awsdynamodb.AttributeType_STRING,
+    },
     BillingMode:   awsdynamodb.BillingMode_PAY_PER_REQUEST,
-    RemovalPolicy: awscdk.RemovalPolicy_RETAIN,
+    RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
   })
 
   trashNotificationRole := awsiam.NewRole(stack, jsii.String("trashNotificationRole"), &awsiam.RoleProps{

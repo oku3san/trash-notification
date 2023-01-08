@@ -1,168 +1,209 @@
 {
-  "trashNotification": [
+  "<TableName>>": [
     {
       "PutRequest": {
         "Item": {
-          "Id": {
-            "N": "0"
-          },
-          "DayOfWeek": {
-            "S": "日曜日"
-          },
-          "Garbages": {
-            "L": [
-              {
-                "S": ""
-              }
-            ]
-          },
-          "IsFinished": {
-            "N": "0"
-          }
+          "Id": {"N": "0"},
+          "DataType": {"S": "DayOfWeek"},
+          "DataValue": {"S": "日曜日"}
         }
       }
     },
     {
       "PutRequest": {
         "Item": {
-          "Id": {
-            "N": "1"
-          },
-          "DayOfWeek": {
-            "S": "月曜日"
-          },
-          "Garbages": {
-            "L": [
-              {
-                "S": "一般ゴミ"
-              },
-              {
-                "S": "有害ゴミ"
-              },
-              {
-                "S": "びん・かん"
-              }
-            ]
-          },
-          "IsFinished": {
-            "N": "0"
-          }
+          "Id": {"N": "0"},
+          "DataType": {"S": "Garbage"},
+          "DataValue": {"L": [
+            {"S": ""}
+          ]}
         }
       }
     },
     {
       "PutRequest": {
         "Item": {
-          "Id": {
-            "N": "2"
-          },
-          "DayOfWeek": {
-            "S": "火曜日"
-          },
-          "Garbages": {
-            "L": [
-              {
-                "S": ""
-              }
-            ]
-          },
-          "IsFinished": {
-            "N": "0"
-          }
+          "Id": {"N": "0"},
+          "DataType": {"S": "IsFinished"},
+          "DataValue": {"N": "0"}
         }
       }
     },
     {
       "PutRequest": {
         "Item": {
-          "Id": {
-            "N": "3"
-          },
-          "DayOfWeek": {
-            "S": "水曜日"
-          },
-          "Garbages": {
-            "L": [
-              {
-                "S": "プラスチック"
-              },
-              {
-                "S": "整容器類"
-              }
-            ]
-          },
-          "IsFinished": {
-            "N": "0"
-          }
+          "Id": {"N": "1"},
+          "DataType": {"S": "DayOfWeek"},
+          "DataValue": {"S": "月曜日"}
         }
       }
     },
     {
       "PutRequest": {
         "Item": {
-          "Id": {
-            "N": "4"
-          },
-          "DayOfWeek": {
-            "S": "木曜日"
-          },
-          "Garbages": {
-            "L": [
-              {
-                "S": "一般ゴミ"
-              },
-              {
-                "S": "有害ゴミ"
-              }
-            ]
-          },
-          "IsFinished": {
-            "N": "0"
-          }
+          "Id": {"N": "1"},
+          "DataType": {"S": "Garbage"},
+          "DataValue": {"L": [
+            {"S": "一般ゴミ"},
+            {"S": "有害ゴミ"},
+            {"S": "びん・かん"}
+          ]}
         }
       }
     },
     {
       "PutRequest": {
         "Item": {
-          "Id": {
-            "N": "5"
-          },
-          "DayOfWeek": {
-            "S": "金曜日"
-          },
-          "Garbages": {
-            "L": [
-              {
-                "S": ""
-              }
-            ]
-          },
-          "IsFinished": {
-            "N": "0"
-          }
+          "Id": {"N": "1"},
+          "DataType": {"S": "IsFinished"},
+          "DataValue": {"N": "0"}
         }
       }
     },
     {
       "PutRequest": {
         "Item": {
-          "Id": {
-            "N": "6"
-          },
-          "DayOfWeek": {
-            "S": "土曜日"
-          },
-          "Garbages": {
-            "L": [
-              {
-                "S": ""
-              }
-            ]
-          },
-          "IsFinished": {
-            "N": "0"
-          }
+          "Id": {"N": "2"},
+          "DataType": {"S": "DayOfWeek"},
+          "DataValue": {"S": "火曜日"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "2"},
+          "DataType": {"S": "Garbage"},
+          "DataValue": {"L": [
+            {"S": ""}
+          ]}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "2"},
+          "DataType": {"S": "IsFinished"},
+          "DataValue": {"N": "0"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "3"},
+          "DataType": {"S": "DayOfWeek"},
+          "DataValue": {"S": "水曜日"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "3"},
+          "DataType": {"S": "Garbage"},
+          "DataValue": {"L": [
+            { "S" : "プラスチック" },
+            { "S" : "整容器類" }
+          ]}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "3"},
+          "DataType": {"S": "IsFinished"},
+          "DataValue": {"N": "0"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "4"},
+          "DataType": {"S": "DayOfWeek"},
+          "DataValue": {"S": "木曜日"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "4"},
+          "DataType": {"S": "Garbage"},
+          "DataValue": {"L": [
+            { "S" : "一般ゴミ" },
+            { "S" : "有害ゴミ" }
+          ]}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "4"},
+          "DataType": {"S": "IsFinished"},
+          "DataValue": {"N": "0"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "5"},
+          "DataType": {"S": "DayOfWeek"},
+          "DataValue": {"S": "金曜日"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "5"},
+          "DataType": {"S": "Garbage"},
+          "DataValue": {"L": [
+            { "S" : "" }
+          ]}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "5"},
+          "DataType": {"S": "IsFinished"},
+          "DataValue": {"N": "0"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "6"},
+          "DataType": {"S": "DayOfWeek"},
+          "DataValue": {"S": "土曜日"}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "6"},
+          "DataType": {"S": "Garbage"},
+          "DataValue": {"L": [
+            { "S" : "" }
+          ]}
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "Id": {"N": "6"},
+          "DataType": {"S": "IsFinished"},
+          "DataValue": {"N": "0"}
         }
       }
     }
