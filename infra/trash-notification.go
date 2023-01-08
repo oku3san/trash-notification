@@ -102,8 +102,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
     //LogRetention: awslogs.RetentionDays_ONE_DAY,  disabled for local
     Environment: &map[string]*string{
-      "tableName":        trashNotificationTable.TableName(),
-      "dynamoDbEndpoint": jsii.String("http://localhost:4566"),
+      "tableName": trashNotificationTable.TableName(),
     },
   })
   trashNotificationTable.GrantReadWriteData(setStatus)
