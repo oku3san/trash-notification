@@ -78,6 +78,7 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
       fmt.Println(err)
       return err
     }
+    fmt.Println(sqsMessageFromLine)
     fmt.Printf("%+v\n", sqsMessageFromLine.Events[0].Message.Text)
   }
 
