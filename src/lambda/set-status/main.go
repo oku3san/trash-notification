@@ -43,7 +43,7 @@ type SqsMessageFromLine struct {
   Events      Events `json:"events"`
 }
 
-type Test struct {
+type TrashData struct {
   Id        int      `dynamo:"Id"`
   DataType  string   `dynamo:"DataType"`
   DataValue []string `dynamo:"DataValue"`
@@ -61,7 +61,7 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
   db := dynamo.New(sess)
   table := db.Table(os.Getenv("tableName"))
-  var results []Test
+  var results []TrashData
   err = table.Get("Id", 1).All(&results)
   if err != nil {
     fmt.Println(err)

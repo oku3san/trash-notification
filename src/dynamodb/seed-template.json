@@ -15,7 +15,7 @@
           "Id": {"N": "0"},
           "DataType": {"S": "Garbage"},
           "DataValue": {"L": [
-            {"S": ""}
+            {"S": "なし"}
           ]}
         }
       }
@@ -25,7 +25,7 @@
         "Item": {
           "Id": {"N": "0"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"N": "0"}
+          "DataValue": {"S": "False"}
         }
       }
     },
@@ -56,7 +56,7 @@
         "Item": {
           "Id": {"N": "1"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"N": "0"}
+          "DataValue": {"S": "False"}
         }
       }
     },
@@ -75,7 +75,7 @@
           "Id": {"N": "2"},
           "DataType": {"S": "Garbage"},
           "DataValue": {"L": [
-            {"S": ""}
+            {"S": "なし"}
           ]}
         }
       }
@@ -85,7 +85,7 @@
         "Item": {
           "Id": {"N": "2"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"N": "0"}
+          "DataValue": {"S": "False"}
         }
       }
     },
@@ -115,7 +115,7 @@
         "Item": {
           "Id": {"N": "3"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"N": "0"}
+          "DataValue": {"S": "False"}
         }
       }
     },
@@ -145,7 +145,7 @@
         "Item": {
           "Id": {"N": "4"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"N": "0"}
+          "DataValue": {"S": "False"}
         }
       }
     },
@@ -164,7 +164,7 @@
           "Id": {"N": "5"},
           "DataType": {"S": "Garbage"},
           "DataValue": {"L": [
-            { "S" : "" }
+            { "S" : "なし" }
           ]}
         }
       }
@@ -174,7 +174,7 @@
         "Item": {
           "Id": {"N": "5"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"N": "0"}
+          "DataValue": {"S": "False"}
         }
       }
     },
@@ -193,7 +193,7 @@
           "Id": {"N": "6"},
           "DataType": {"S": "Garbage"},
           "DataValue": {"L": [
-            { "S" : "" }
+            { "S" : "なし" }
           ]}
         }
       }
@@ -203,7 +203,7 @@
         "Item": {
           "Id": {"N": "6"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"N": "0"}
+          "DataValue": {"S": "False"}
         }
       }
     }
