@@ -44,8 +44,9 @@ type SqsMessageFromLine struct {
 }
 
 type Test struct {
-  Id   int `dynamo:"Id"`
-  Name string
+  Id        int      `dynamo:"Id"`
+  DataType  string   `dynamo:"DataType"`
+  DataValue []string `dynamo:"DataValue"`
 }
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
@@ -60,13 +61,15 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
   db := dynamo.New(sess)
   table := db.Table(os.Getenv("tableName"))
-  var result Test
-  err = table.Get("Id", 0).One(&result)
+  var results []Test
+  err = table.Get("Id", 1).All(&results)
   if err != nil {
     fmt.Println(err)
   }
 
-  println(result.Id, result.Name)
+  for i, _ := range results {
+    fmt.Println(results[i])
+  }
 
   for _, record := range sqsEvent.Records {
     //fmt.Println(message)
