@@ -44,10 +44,14 @@ type SqsMessageFromLine struct {
 }
 
 type TrashData struct {
-  Id        int      `dynamo:"Id"`
-  DataType  string   `dynamo:"DataType"`
-  DataValue []string `dynamo:"DataValue"`
+  Id        int    `dynamo:"Id"`
+  DataType  string `dynamo:"DataType"`
+  DataValue any    `dynamo:"DataValue"`
 }
+
+//type DataValue struct {
+//  DataValue string `dynamo:"DataValue"`
+//}
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
@@ -78,7 +82,6 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
       fmt.Println(err)
       return err
     }
-    fmt.Println(sqsMessageFromLine)
     fmt.Printf("%+v\n", sqsMessageFromLine.Events[0].Message.Text)
   }
 
