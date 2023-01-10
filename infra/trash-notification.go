@@ -24,6 +24,8 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   }
   stack := awscdk.NewStack(scope, &id, &sprops)
 
+  env := scope.Node().TryGetContext(jsii.String("env")).(string)
+
   // The code that defines your stack goes here
 
   // SQS を作成
@@ -103,6 +105,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     //LogRetention: awslogs.RetentionDays_ONE_DAY,  disabled for local
     Environment: &map[string]*string{
       "tableName": trashNotificationTable.TableName(),
+      "env":       jsii.String(env),
     },
   })
   trashNotificationTable.GrantReadWriteData(setStatus)

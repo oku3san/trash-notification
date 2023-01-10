@@ -4,7 +4,7 @@ init-local:
 	docker compose -f ./src/docker-compose.yml up -d
 	pushd infra && \
 		cdklocal bootstrap && \
-		cdklocal deploy --require-approval never && \
+		cdklocal deploy -c env=local --require-approval never && \
 		popd
 	make setup-data-local
 
@@ -25,13 +25,13 @@ setup-data:
 .PHONY: deploy-local
 deploy-local:
 	pushd infra && \
-		cdklocal deploy --require-approval never && \
+		cdklocal deploy -c env=local --require-approval never && \
 		popd
 
 .PHONY: deploy
 deploy:
 	pushd infra && \
-		aws-vault exec default -- cdk deploy --require-approval never && \
+		aws-vault exec default -- cdk deploy -c env=prd --require-approval never && \
 		popd
 
 .PHONY: send-message-local

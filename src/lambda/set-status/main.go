@@ -50,19 +50,19 @@ type TrashData struct {
   DataValue any    `dynamo:"DataValue"`
 }
 
-//type DataValue struct {
-//  DataValue string `dynamo:"DataValue"`
-//}
-
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
   // 曜日の番号を取得
   dayOfWeekNumber := getDayOfWeek()
 
   // DynamoDB 接続の初期設定
+  var endpoint string
+  if os.Getenv("env") == "local" {
+    endpoint = "http://localhost:4566"
+  }
   sess, err := session.NewSession(&aws.Config{
     Region:   aws.String("ap-northeast-1"),
-    Endpoint: aws.String("http://localhost:4566"),
+    Endpoint: aws.String(endpoint),
   })
   if err != nil {
     fmt.Printf("failed new session [%v]", err)
