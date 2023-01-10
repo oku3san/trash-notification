@@ -10,6 +10,7 @@ import (
   "github.com/aws/aws-sdk-go/aws/session"
   "github.com/guregu/dynamo"
   "os"
+  "time"
 )
 
 type Message struct {
@@ -55,34 +56,40 @@ type TrashData struct {
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
+  // 曜日の番号を取得
+  dayOfWeekNumber := getDayOfWeek()
+
+  // DynamoDB 接続の初期設定
   sess, err := session.NewSession(&aws.Config{
     Region:   aws.String("ap-northeast-1"),
     Endpoint: aws.String("http://localhost:4566"),
   })
   if err != nil {
-    fmt.Println(err)
+    fmt.Printf("failed new session [%v]", err)
   }
-
   db := dynamo.New(sess)
   table := db.Table(os.Getenv("tableName"))
-  var results []TrashData
-  err = table.Get("Id", 1).All(&results)
-  if err != nil {
-    fmt.Println(err)
-  }
 
-  for i, _ := range results {
-    fmt.Println(results[i])
-  }
-
+  // SQS のメッセージ取得
   for _, record := range sqsEvent.Records {
-    //fmt.Println(message)
     var sqsMessageFromLine SqsMessageFromLine
     if err := json.Unmarshal([]byte(record.Body), &sqsMessageFromLine); err != nil {
-      fmt.Println(err)
+      fmt.Printf("failed unmarshal json %v\n", err)
       return err
     }
-    fmt.Printf("%+v\n", sqsMessageFromLine.Events[0].Message.Text)
+    message := sqsMessageFromLine.Events[0].Message.Text
+
+    if message == "はい" {
+      t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "True"}
+      if err := table.Put(t).Run(); err != nil {
+        fmt.Printf("failed to put item[%v]\n", err)
+      }
+    } else {
+      t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "False"}
+      if err := table.Put(t).Run(); err != nil {
+        fmt.Printf("failed to put item[%v]\n", err)
+      }
+    }
   }
 
   return nil
@@ -90,4 +97,15 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 func main() {
   lambda.Start(handler)
+}
+
+func getDayOfWeek() int {
+  jst, err := time.LoadLocation("Asia/Tokyo")
+  if err != nil {
+    fmt.Println(err)
+  }
+  dayOfWeek := time.Now().In(jst).Weekday()
+  dayOfWeekNumber := int(dayOfWeek)
+
+  return dayOfWeekNumber
 }

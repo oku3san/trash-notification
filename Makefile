@@ -37,4 +37,4 @@ deploy:
 .PHONY: send-message-local
 send-message-local:
 		$(eval SQSENDPOINT := $(shell awslocal cloudformation describe-stacks --region ap-northeast-1 --stack-name "TrashNotificationStack" --output text --query 'Stacks[].Outputs[?OutputKey==`sqsEndpoint`].[OutputValue]'))
-		awslocal sqs send-message --message-body '{"destination":"xxx","events":[{"type":"message","message":{"type":"text","id":"xxx","text":"はい"},"webhookEventId":"xxx","deliveryContext":{"isRedelivery":false},"timestamp":1672845789652,"source":{"type":"user","userId":"xxx"},"replyToken":"xxx","mode":"active"}]}' --region ap-northeast-1 --queue-url $(SQSENDPOINT)
+		awslocal sqs send-message --message-body '{"destination":"xxx","events":[{"type":"message","message":{"type":"text","id":"xxx","text":"$(MSG)"},"webhookEventId":"xxx","deliveryContext":{"isRedelivery":false},"timestamp":1672845789652,"source":{"type":"user","userId":"xxx"},"replyToken":"xxx","mode":"active"}]}' --region ap-northeast-1 --queue-url $(SQSENDPOINT)
