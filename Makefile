@@ -3,7 +3,7 @@ init-local:
 	docker compose -f ./src/docker-compose.yml down
 	docker compose -f ./src/docker-compose.yml up -d
 	pushd infra && \
-		cdklocal bootstrap && \
+		cdklocal bootstrap -c env=local && \
 		cdklocal deploy -c env=local --require-approval never && \
 		popd
 	make setup-data-local
