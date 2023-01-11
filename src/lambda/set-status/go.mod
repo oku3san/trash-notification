@@ -1,4 +1,4 @@
-module lambda
+module set-status
 
 go 1.18
 
