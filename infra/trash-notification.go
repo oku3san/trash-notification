@@ -62,26 +62,42 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       //LoggingLevel:     awsapigateway.MethodLoggingLevel_INFO,
     },
   })
+  // root パスの設定
   trashNotificationAPiGw.Root().
-    AddMethod(jsii.String("POST"), awsapigateway.NewAwsIntegration(&awsapigateway.AwsIntegrationProps{
-      Service:               jsii.String("sqs"),
-      IntegrationHttpMethod: jsii.String("POST"),
-      Path:                  jsii.String(*awscdk.Stack_Of(stack).Account() + "/" + *trashNotificationQueue.QueueName()),
-      Options: &awsapigateway.IntegrationOptions{
-        CredentialsRole: trashNotificationRole,
-        IntegrationResponses: &[]*awsapigateway.IntegrationResponse{
-          {
-            StatusCode: jsii.String("200"),
+    AddMethod(
+      jsii.String("POST"),
+      // SQS インテグレーションの設定
+      awsapigateway.NewAwsIntegration(&awsapigateway.AwsIntegrationProps{
+        Service:               jsii.String("sqs"),
+        IntegrationHttpMethod: jsii.String("POST"),
+        Path:                  jsii.String(*awscdk.Stack_Of(stack).Account() + "/" + *trashNotificationQueue.QueueName()),
+        Options: &awsapigateway.IntegrationOptions{
+          CredentialsRole: trashNotificationRole,
+          IntegrationResponses: &[]*awsapigateway.IntegrationResponse{
+            {
+              StatusCode: jsii.String("200"),
+            },
+          },
+          RequestParameters: &map[string]*string{
+            "integration.request.header.Content-Type": jsii.String("'application/x-www-form-urlencoded'"),
+          },
+          RequestTemplates: &map[string]*string{
+            "application/json": jsii.String("Action=SendMessage&MessageBody=$input.body"),
           },
         },
-        RequestParameters: &map[string]*string{
-          "integration.request.header.Content-Type": jsii.String("'application/x-www-form-urlencoded'"),
+      }),
+      // リクエストヘッダの検証
+      &awsapigateway.MethodOptions{
+        RequestParameters: &map[string]*bool{
+          "method.request.header.x-line-signature": jsii.Bool(true),
         },
-        RequestTemplates: &map[string]*string{
-          "application/json": jsii.String("Action=SendMessage&MessageBody=$input.body"),
-        },
-      },
-    }), nil).
+        RequestValidator: awsapigateway.NewRequestValidator(stack, jsii.String("requestValidator"), &awsapigateway.RequestValidatorProps{
+          ValidateRequestParameters: jsii.Bool(true),
+          RestApi:                   trashNotificationAPiGw,
+        }),
+        RequestValidatorOptions: nil,
+      }).
+    // レスポンスの設定
     AddMethodResponse(&awsapigateway.MethodResponse{
       StatusCode: jsii.String("200"),
       ResponseModels: &map[string]awsapigateway.IModel{
