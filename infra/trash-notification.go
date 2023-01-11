@@ -45,6 +45,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     },
     BillingMode:   awsdynamodb.BillingMode_PAY_PER_REQUEST,
     RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
+    Stream:        awsdynamodb.StreamViewType_NEW_AND_OLD_IMAGES,
   })
 
   // API GW が SQS を呼び出すためのロールを作成
@@ -131,6 +132,29 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     BatchSize: jsii.Number(1),
     Enabled:   jsii.Bool(true),
   }))
+
+  // Lambda 作成し、DynamoDB の操作権限を付与
+  sendMessage := awslambda.NewFunction(stack, jsii.String("sendMessage"), &awslambda.FunctionProps{
+    Runtime: awslambda.Runtime_GO_1_X(),
+    Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/send-message"), &awss3assets.AssetOptions{
+      Bundling: &awscdk.BundlingOptions{
+        Image:   awslambda.Runtime_GO_1_X().BundlingImage(),
+        Command: jsii.Strings("bash", "-c", "GOOS=linux GOARCH=amd64 go build -o /asset-output/main"),
+        User:    jsii.String("root"),
+      },
+    }),
+    Handler: jsii.String("main"),
+    Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
+    //LogRetention: awslogs.RetentionDays_ONE_DAY,  disabled for local
+    Environment: &map[string]*string{
+      "env": jsii.String(env),
+    },
+  })
+  sendMessage.AddEventSource(awslambdaeventsources.NewDynamoEventSource(trashNotificationTable, &awslambdaeventsources.DynamoEventSourceProps{
+    StartingPosition: awslambda.StartingPosition_LATEST,
+    Enabled:          jsii.Bool(true),
+  }))
+  trashNotificationTable.GrantStreamRead(sendMessage)
 
   // Output
   awscdk.NewCfnOutput(stack, jsii.String("dynamoDbName"), &awscdk.CfnOutputProps{
