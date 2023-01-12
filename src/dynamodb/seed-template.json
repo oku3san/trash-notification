@@ -25,7 +25,8 @@
         "Item": {
           "Id": {"N": "0"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"S": "False"}
+          "DataValue": {"S": "False"},
+          "UpdatedAt": {"N": "1234567890"}
         }
       }
     },
@@ -56,7 +57,8 @@
         "Item": {
           "Id": {"N": "1"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"S": "False"}
+          "DataValue": {"S": "False"},
+          "UpdatedAt": {"N": "1234567890"}
         }
       }
     },
@@ -85,7 +87,8 @@
         "Item": {
           "Id": {"N": "2"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"S": "False"}
+          "DataValue": {"S": "False"},
+          "UpdatedAt": {"N": "1234567890"}
         }
       }
     },
@@ -115,7 +118,8 @@
         "Item": {
           "Id": {"N": "3"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"S": "False"}
+          "DataValue": {"S": "False"},
+          "UpdatedAt": {"N": "1234567890"}
         }
       }
     },
@@ -145,7 +149,8 @@
         "Item": {
           "Id": {"N": "4"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"S": "False"}
+          "DataValue": {"S": "False"},
+          "UpdatedAt": {"N": "1234567890"}
         }
       }
     },
@@ -174,7 +179,8 @@
         "Item": {
           "Id": {"N": "5"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"S": "False"}
+          "DataValue": {"S": "False"},
+          "UpdatedAt": {"N": "1234567890"}
         }
       }
     },
@@ -203,7 +209,8 @@
         "Item": {
           "Id": {"N": "6"},
           "DataType": {"S": "IsFinished"},
-          "DataValue": {"S": "False"}
+          "DataValue": {"S": "False"},
+          "UpdatedAt": {"N": "1234567890"}
         }
       }
     }
