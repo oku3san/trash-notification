@@ -48,6 +48,7 @@ type TrashData struct {
   Id        int    `dynamo:"Id"`
   DataType  string `dynamo:"DataType"`
   DataValue any    `dynamo:"DataValue"`
+  UpdatedAt int    `dynamo:"UpdatedAt,omitempty"`
 }
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
@@ -80,12 +81,12 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
     message := sqsMessageFromLine.Events[0].Message.Text
 
     if message == "はい" {
-      t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "True"}
+      t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "True", UpdatedAt: int(time.Now().Unix())}
       if err := table.Put(t).Run(); err != nil {
         fmt.Printf("failed to put item[%v]\n", err)
       }
     } else {
-      t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "False"}
+      t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "False", UpdatedAt: int(time.Now().Unix())}
       if err := table.Put(t).Run(); err != nil {
         fmt.Printf("failed to put item[%v]\n", err)
       }
