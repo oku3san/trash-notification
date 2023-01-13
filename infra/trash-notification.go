@@ -31,6 +31,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   // SQS を作成
   trashNotificationQueue := awssqs.NewQueue(stack, jsii.String("trashNotificationQueue"), &awssqs.QueueProps{
     VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
+    RetentionPeriod:   awscdk.Duration_Seconds(jsii.Number(300)),
   })
 
   // DynamoDB を作成
