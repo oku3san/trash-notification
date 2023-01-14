@@ -29,6 +29,8 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   env := scope.Node().TryGetContext(jsii.String("env")).(string)
 
   // The code that defines your stack goes here
+
+  // Line のトークン等を取得
   var accessToken string
   var channelSecret string
   var userId string
