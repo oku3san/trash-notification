@@ -29,10 +29,18 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   env := scope.Node().TryGetContext(jsii.String("env")).(string)
 
   // The code that defines your stack goes here
-
-  accessToken := awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_access_token"))
-  channelSecret := awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_channel_secret"))
-  userId := awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_user_id"))
+  var accessToken string
+  var channelSecret string
+  var userId string
+  if env == "local" {
+    accessToken = os.Getenv("accessToken")
+    channelSecret = os.Getenv("channelSecret")
+    userId = os.Getenv("userId")
+  } else {
+    accessToken = *awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_access_token"))
+    channelSecret = *awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_channel_secret"))
+    userId = *awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_user_id"))
+  }
 
   // SQS を作成
   trashNotificationQueue := awssqs.NewQueue(stack, jsii.String("trashNotificationQueue"), &awssqs.QueueProps{
@@ -155,9 +163,9 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     //LogRetention: awslogs.RetentionDays_ONE_DAY,  disabled for local
     Environment: &map[string]*string{
       "env":           jsii.String(env),
-      "accessToken":   accessToken,
-      "channelSecret": channelSecret,
-      "userId":        userId,
+      "accessToken":   jsii.String(accessToken),
+      "channelSecret": jsii.String(channelSecret),
+      "userId":        jsii.String(userId),
     },
   })
   sendMessage.AddEventSource(awslambdaeventsources.NewDynamoEventSource(trashNotificationTable, &awslambdaeventsources.DynamoEventSourceProps{
