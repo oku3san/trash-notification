@@ -9,8 +9,10 @@ import (
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambdaeventsources"
   "github.com/aws/aws-cdk-go/awscdk/v2/awss3assets"
   "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awsssm"
   "github.com/aws/constructs-go/constructs/v10"
   "github.com/aws/jsii-runtime-go"
+  "os"
 )
 
 type TrashNotificationStackProps struct {
@@ -27,6 +29,10 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   env := scope.Node().TryGetContext(jsii.String("env")).(string)
 
   // The code that defines your stack goes here
+
+  accessToken := awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_access_token"))
+  channelSecret := awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_channel_secret"))
+  userId := awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_user_id"))
 
   // SQS を作成
   trashNotificationQueue := awssqs.NewQueue(stack, jsii.String("trashNotificationQueue"), &awssqs.QueueProps{
@@ -148,7 +154,10 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
     //LogRetention: awslogs.RetentionDays_ONE_DAY,  disabled for local
     Environment: &map[string]*string{
-      "env": jsii.String(env),
+      "env":           jsii.String(env),
+      "accessToken":   accessToken,
+      "channelSecret": channelSecret,
+      "userId":        userId,
     },
   })
   sendMessage.AddEventSource(awslambdaeventsources.NewDynamoEventSource(trashNotificationTable, &awslambdaeventsources.DynamoEventSourceProps{
@@ -190,7 +199,7 @@ func env() *awscdk.Environment {
   // Account/Region-dependent features and context lookups will not work, but a
   // single synthesized template can be deployed anywhere.
   //---------------------------------------------------------------------------
-  return nil
+  //return nil
 
   // Uncomment if you know exactly what account and region you want to deploy
   // the stack to. This is the recommendation for production stacks.
@@ -204,8 +213,8 @@ func env() *awscdk.Environment {
   // implied by the current CLI configuration. This is recommended for dev
   // stacks.
   //---------------------------------------------------------------------------
-  // return &awscdk.Environment{
-  //  Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
-  //  Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
-  // }
+  return &awscdk.Environment{
+    Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
+    Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
+  }
 }

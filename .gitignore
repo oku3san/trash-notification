@@ -18,3 +18,4 @@
 .cdk.staging
 infra/cdk.out
 src/localstack/*
+cdk.context.json
