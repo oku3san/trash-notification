@@ -30,20 +30,15 @@ func handler(ctx context.Context, e events.DynamoDBEvent) error {
     os.Getenv("accessToken"),
   )
   userId := os.Getenv("userId")
-  //var messages []linebot.SendingMessage
-  // append some message to messages
-
-  fmt.Println("send-message")
-
-  var message string
+  var messages []linebot.SendingMessage
   for _, r := range e.Records {
     if r.Change.NewImage["DataValue"].String() == "True" {
-      message = "yes"
+      messages = append(messages, linebot.NewTextMessage("yes"))
     } else {
-      message = "no"
+      messages = append(messages, linebot.NewTextMessage("no"))
     }
   }
-  _, err = bot.PushMessage(userId, linebot.NewTextMessage(message)).Do()
+  _, err = bot.PushMessage(userId, messages...).Do()
   if err != nil {
     fmt.Println(err)
   }
