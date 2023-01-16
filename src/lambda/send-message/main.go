@@ -35,18 +35,17 @@ func handler(ctx context.Context, e events.DynamoDBEvent) error {
 
   fmt.Println("send-message")
 
+  var message string
   for _, r := range e.Records {
     if r.Change.NewImage["DataValue"].String() == "True" {
-      _, err = bot.PushMessage(userId, linebot.NewTextMessage("yes")).Do()
-      if err != nil {
-        fmt.Println(err)
-      }
+      message = "yes"
     } else {
-      _, err = bot.PushMessage(userId, linebot.NewTextMessage("no")).Do()
-      if err != nil {
-        fmt.Println(err)
-      }
+      message = "no"
     }
+  }
+  _, err = bot.PushMessage(userId, linebot.NewTextMessage(message)).Do()
+  if err != nil {
+    fmt.Println(err)
   }
 
   return nil
