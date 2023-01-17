@@ -33,9 +33,9 @@ func handler(ctx context.Context, e events.DynamoDBEvent) error {
   var messages []linebot.SendingMessage
   for _, r := range e.Records {
     if r.Change.NewImage["DataValue"].String() == "True" {
-      messages = append(messages, linebot.NewTextMessage("yes"))
+      messages = append(messages, linebot.NewStickerMessage("6370", "11088025"))
     } else {
-      messages = append(messages, linebot.NewTextMessage("no"))
+      messages = append(messages, linebot.NewStickerMessage("8515", "16581257"))
     }
   }
   _, err = bot.PushMessage(userId, messages...).Do()
