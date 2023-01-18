@@ -3,10 +3,12 @@ package main
 import (
   "github.com/aws/aws-cdk-go/awscdk/v2"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awscertificatemanager"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambdaeventsources"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awsroute53"
   "github.com/aws/aws-cdk-go/awscdk/v2/awss3assets"
   "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsssm"
@@ -30,19 +32,33 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
   // The code that defines your stack goes here
 
-  // Line のトークン等を取得
+  // 各種変数を設定
   var accessToken string
   var channelSecret string
   var userId string
+  var domainName string
   if env == "local" {
     accessToken = os.Getenv("accessToken")
     channelSecret = os.Getenv("channelSecret")
     userId = os.Getenv("userId")
+    domainName = os.Getenv("domainName")
   } else {
     accessToken = *awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_access_token"))
     channelSecret = *awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_channel_secret"))
     userId = *awsssm.StringParameter_ValueFromLookup(stack, jsii.String("line_user_id"))
+    domainName = *awsssm.StringParameter_ValueFromLookup(stack, jsii.String("domain"))
   }
+
+  // ドメイン名から hosted zone の情報取得
+  hostedZone := awsroute53.HostedZone_FromLookup(stack, jsii.String("hostedZone"), &awsroute53.HostedZoneProviderProps{
+    DomainName: jsii.String(domainName),
+  })
+
+  // ACM 取得
+  lineApiAcm := awscertificatemanager.NewCertificate(stack, jsii.String("lineApiAcm"), &awscertificatemanager.CertificateProps{
+    DomainName: jsii.String("lineapiv2." + domainName),
+    Validation: awscertificatemanager.CertificateValidation_FromDns(hostedZone),
+  })
 
   // SQS を作成
   trashNotificationQueue := awssqs.NewQueue(stack, jsii.String("trashNotificationQueue"), &awssqs.QueueProps{
@@ -78,6 +94,10 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     DeployOptions: &awsapigateway.StageOptions{
       //DataTraceEnabled: jsii.Bool(true),
       //LoggingLevel:     awsapigateway.MethodLoggingLevel_INFO,
+    },
+    DomainName: &awsapigateway.DomainNameOptions{
+      Certificate: lineApiAcm,
+      DomainName:  jsii.String("lineapiv2." + domainName),
     },
   })
   // root パスの設定
@@ -123,6 +143,12 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       },
       ResponseParameters: nil,
     })
+
+  awsroute53.NewCnameRecord(stack, jsii.String("cnameRecord"), &awsroute53.CnameRecordProps{
+    Zone:       hostedZone,
+    RecordName: jsii.String("lineapiv2"),
+    DomainName: trashNotificationAPiGw.DomainName().DomainNameAliasDomainName(),
+  })
 
   // Lambda 作成し、DynamoDB の操作権限を付与
   setStatus := awslambda.NewFunction(stack, jsii.String("setStatus"), &awslambda.FunctionProps{
