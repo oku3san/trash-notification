@@ -144,11 +144,14 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       ResponseParameters: nil,
     })
 
-  awsroute53.NewCnameRecord(stack, jsii.String("cnameRecord"), &awsroute53.CnameRecordProps{
-    Zone:       hostedZone,
-    RecordName: jsii.String("lineapiv2"),
-    DomainName: trashNotificationAPiGw.DomainName().DomainNameAliasDomainName(),
-  })
+  // localstack の場合、レコード登録時に TTL の部分でエラーになるため
+  if env != "local" {
+    awsroute53.NewCnameRecord(stack, jsii.String("cnameRecord"), &awsroute53.CnameRecordProps{
+      Zone:       hostedZone,
+      RecordName: jsii.String("lineapiv2"),
+      DomainName: trashNotificationAPiGw.DomainName().DomainNameAliasDomainName(),
+    })
+  }
 
   // Lambda 作成し、DynamoDB の操作権限を付与
   setStatus := awslambda.NewFunction(stack, jsii.String("setStatus"), &awslambda.FunctionProps{

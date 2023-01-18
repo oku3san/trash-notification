@@ -1,8 +1,13 @@
+include .envrc
+
 .PHONY: init-local
 init-local:
 	docker compose -f ./src/docker-compose.yml down
 	docker compose -f ./src/docker-compose.yml up -d
+	sleep 5
+	make setup-domain-local
 	pushd infra && \
+		cdklocal context --clear -c env=local && \
 		cdklocal bootstrap -c env=local && \
 		cdklocal deploy -c env=local --require-approval never && \
 		popd
@@ -14,6 +19,10 @@ setup-data-local:
 		gsed "s/<TableName>/$(TABLENAME)/g" ./src/dynamodb/seed-template.json > ./src/dynamodb/seed.json && \
 		awslocal dynamodb batch-write-item --request-items file://./src/dynamodb/seed.json --region ap-northeast-1 ; \
 		rm ./src/dynamodb/seed.json
+
+.PHONY: setup-domain-local
+setup-domain-local:
+		awslocal route53 create-hosted-zone --name ${domainName} --caller-reference `date +%Y-%m-%d_%H-%M-%S` --region ap-northeast-1
 
 .PHONY: setup-data
 setup-data:
@@ -32,6 +41,18 @@ deploy-local:
 deploy:
 	pushd infra && \
 		aws-vault exec default -- cdk deploy -c env=prd --require-approval never && \
+		popd
+
+.PHONY: diff-local
+diff-local:
+	pushd infra && \
+		cdklocal diff -c env=local && \
+		popd
+
+.PHONY: diff
+diff:
+	pushd infra && \
+		aws-vault exec default -- cdk diff -c env=prd && \
 		popd
 
 .PHONY: send-message-local
