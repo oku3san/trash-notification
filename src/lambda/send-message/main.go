@@ -17,6 +17,7 @@ func handler(ctx context.Context, e events.DynamoDBEvent) error {
     os.Getenv("accessToken"),
   )
   userId := os.Getenv("userId")
+  var messages []linebot.SendingMessage
   for _, r := range e.Records {
     updatedAtString := r.Change.NewImage["UpdatedAt"].Number()
     currentHour := getHourInJST(updatedAtString)
@@ -26,18 +27,15 @@ func handler(ctx context.Context, e events.DynamoDBEvent) error {
     } else {
       dataValue := r.Change.NewImage["DataValue"].String()
       if dataValue == "True" {
-        _, err = bot.PushMessage(userId, linebot.NewStickerMessage("6370", "11088025")).Do()
-        if err != nil {
-          fmt.Println(err)
-        }
+        messages = append(messages, linebot.NewStickerMessage("6370", "11088025"))
       } else if dataValue == "False" {
-        _, err = bot.PushMessage(userId, linebot.NewStickerMessage("8515", "16581257")).Do()
-        if err != nil {
-          fmt.Println(err)
-        }
+        messages = append(messages, linebot.NewStickerMessage("8515", "16581257"))
       }
-
     }
+  }
+  _, err = bot.PushMessage(userId, messages...).Do()
+  if err != nil {
+    fmt.Println(err)
   }
   return nil
 }
