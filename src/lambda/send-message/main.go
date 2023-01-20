@@ -11,21 +11,6 @@ import (
   "time"
 )
 
-type DynamoDbEvent struct {
-  DataType struct {
-    S string `json:"S"`
-  } `json:"DataType"`
-  DataValue struct {
-    S string `json:"S"`
-  } `json:"DataValue"`
-  ID struct {
-    N string `json:"N"`
-  } `json:"Id"`
-  UpdatedAt struct {
-    N string `json:"N"`
-  } `json:"UpdatedAt"`
-}
-
 func handler(ctx context.Context, e events.DynamoDBEvent) error {
   bot, err := linebot.New(
     os.Getenv("channelSecret"),
