@@ -7,6 +7,8 @@ import (
   "github.com/aws/aws-lambda-go/lambda"
   "github.com/line/line-bot-sdk-go/v7/linebot"
   "os"
+  "strconv"
+  "time"
 )
 
 type DynamoDbEvent struct {
@@ -32,18 +34,32 @@ func handler(ctx context.Context, e events.DynamoDBEvent) error {
   userId := os.Getenv("userId")
   var messages []linebot.SendingMessage
   for _, r := range e.Records {
-    if r.Change.NewImage["DataValue"].String() == "True" {
-      messages = append(messages, linebot.NewStickerMessage("6370", "11088025"))
+
+    updatedAtString := r.Change.NewImage["UpdatedAt"].Number()
+    currentHour := getHourInJST(updatedAtString)
+
+    if currentHour == 0 {
+      return nil
     } else {
-      messages = append(messages, linebot.NewStickerMessage("8515", "16581257"))
+      if r.Change.NewImage["DataValue"].String() == "True" {
+        messages = append(messages, linebot.NewStickerMessage("6370", "11088025"))
+      } else {
+        messages = append(messages, linebot.NewStickerMessage("8515", "16581257"))
+      }
+      _, err = bot.PushMessage(userId, messages...).Do()
+      if err != nil {
+        fmt.Println(err)
+      }
     }
   }
-  _, err = bot.PushMessage(userId, messages...).Do()
-  if err != nil {
-    fmt.Println(err)
-  }
-
   return nil
+}
+
+func getHourInJST(unixTime string) int {
+  timezone, _ := time.LoadLocation("Asia/Tokyo")
+  updatedAtInt64, _ := strconv.ParseInt(unixTime, 10, 64)
+  date := time.Unix(updatedAtInt64, 0).In(timezone)
+  return date.Hour()
 }
 
 func main() {
