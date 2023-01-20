@@ -41,9 +41,10 @@ func handler(ctx context.Context, e events.DynamoDBEvent) error {
     if currentHour == 0 {
       return nil
     } else {
-      if r.Change.NewImage["DataValue"].String() == "True" {
+      dataValue := r.Change.NewImage["DataValue"].String()
+      if dataValue == "True" {
         messages = append(messages, linebot.NewStickerMessage("6370", "11088025"))
-      } else {
+      } else if dataValue == "False" {
         messages = append(messages, linebot.NewStickerMessage("8515", "16581257"))
       }
       _, err = bot.PushMessage(userId, messages...).Do()
