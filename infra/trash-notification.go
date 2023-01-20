@@ -205,6 +205,26 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   }))
   trashNotificationTable.GrantStreamRead(sendMessage)
 
+  // Lambda 作成し、DynamoDB の操作権限を付与
+  resetStatus := awslambda.NewFunction(stack, jsii.String("resetStatus"), &awslambda.FunctionProps{
+    Runtime: awslambda.Runtime_GO_1_X(),
+    Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/reset-status"), &awss3assets.AssetOptions{
+      Bundling: &awscdk.BundlingOptions{
+        Image:   awslambda.Runtime_GO_1_X().BundlingImage(),
+        Command: jsii.Strings("bash", "-c", "GOOS=linux GOARCH=amd64 go build -o /asset-output/main"),
+        User:    jsii.String("root"),
+      },
+    }),
+    Handler: jsii.String("main"),
+    Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
+    //LogRetention: awslogs.RetentionDays_ONE_DAY,  disabled for local
+    Environment: &map[string]*string{
+      "tableName": trashNotificationTable.TableName(),
+      "env":       jsii.String(env),
+    },
+  })
+  trashNotificationTable.GrantReadWriteData(resetStatus)
+
   // Output
   awscdk.NewCfnOutput(stack, jsii.String("dynamoDbName"), &awscdk.CfnOutputProps{
     Value: trashNotificationTable.TableName(),

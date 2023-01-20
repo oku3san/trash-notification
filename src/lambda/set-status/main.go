@@ -85,11 +85,13 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
       if err := table.Put(t).Run(); err != nil {
         fmt.Printf("failed to put item[%v]\n", err)
       }
-    } else {
+    } else if message == "いいえ" {
       t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "False", UpdatedAt: int(time.Now().Unix())}
       if err := table.Put(t).Run(); err != nil {
         fmt.Printf("failed to put item[%v]\n", err)
       }
+    } else {
+      return nil
     }
   }
 
