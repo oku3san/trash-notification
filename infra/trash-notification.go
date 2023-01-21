@@ -5,6 +5,8 @@ import (
   "github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
   "github.com/aws/aws-cdk-go/awscdk/v2/awscertificatemanager"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awsevents"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awseventstargets"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
   "github.com/aws/aws-cdk-go/awscdk/v2/awslambdaeventsources"
@@ -153,7 +155,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     })
   }
 
-  // Lambda 作成し、DynamoDB の操作権限を付与
+  // ステータスを変更するための Lambda 作成し、DynamoDB の操作権限を付与
   setStatus := awslambda.NewFunction(stack, jsii.String("setStatus"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
     Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/set-status"), &awss3assets.AssetOptions{
@@ -205,7 +207,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   }))
   trashNotificationTable.GrantStreamRead(sendMessage)
 
-  // Lambda 作成し、DynamoDB の操作権限を付与
+  // ゴミ捨てステータスを初期化する Lambda 作成し、DynamoDB の操作権限を付与
   resetStatus := awslambda.NewFunction(stack, jsii.String("resetStatus"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
     Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/reset-status"), &awss3assets.AssetOptions{
@@ -224,6 +226,18 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     },
   })
   trashNotificationTable.GrantReadWriteData(resetStatus)
+
+  // 毎日0時に Lambda を実行する Event Bridge
+  awsevents.NewRule(stack, jsii.String("reset"), &awsevents.RuleProps{
+    Enabled: jsii.Bool(true),
+    Schedule: awsevents.Schedule_Cron(&awsevents.CronOptions{
+      Hour:   jsii.String("0"),
+      Minute: jsii.String("0"),
+    }),
+    Targets: &[]awsevents.IRuleTarget{
+      awseventstargets.NewLambdaFunction(resetStatus, &awseventstargets.LambdaFunctionProps{}),
+    },
+  })
 
   // Output
   awscdk.NewCfnOutput(stack, jsii.String("dynamoDbName"), &awscdk.CfnOutputProps{
