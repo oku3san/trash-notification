@@ -231,7 +231,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   awsevents.NewRule(stack, jsii.String("reset"), &awsevents.RuleProps{
     Enabled: jsii.Bool(true),
     Schedule: awsevents.Schedule_Cron(&awsevents.CronOptions{
-      Hour:   jsii.String("0"),
+      Hour:   jsii.String("15"),
       Minute: jsii.String("0"),
     }),
     Targets: &[]awsevents.IRuleTarget{
