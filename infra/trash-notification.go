@@ -255,6 +255,26 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Environment: &map[string]*string{},
   })
 
+  awslambda.NewFunction(stack, jsii.String("sendMessageWithSF"), &awslambda.FunctionProps{
+    Runtime: awslambda.Runtime_GO_1_X(),
+    Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/stepfunctions/send-message-with-SF"), &awss3assets.AssetOptions{
+      Bundling: &awscdk.BundlingOptions{
+        Image:   awslambda.Runtime_GO_1_X().BundlingImage(),
+        Command: jsii.Strings("bash", "-c", "GOOS=linux GOARCH=amd64 go build -o /asset-output/main"),
+        User:    jsii.String("root"),
+      },
+    }),
+    Handler: jsii.String("main"),
+    Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
+    //LogRetention: awslogs.RetentionDays_ONE_DAY,  disabled for local
+    Environment: &map[string]*string{
+      "env":           jsii.String(env),
+      "accessToken":   jsii.String(accessToken),
+      "channelSecret": jsii.String(channelSecret),
+      "userId":        jsii.String(userId),
+    },
+  })
+
   // Output
   awscdk.NewCfnOutput(stack, jsii.String("dynamoDbName"), &awscdk.CfnOutputProps{
     Value: trashNotificationTable.TableName(),

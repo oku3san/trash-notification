@@ -1,4 +1,4 @@
-module send-message
+module send-message-with-SF
 
 go 1.18
 
