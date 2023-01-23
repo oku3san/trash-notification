@@ -239,6 +239,22 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     },
   })
 
+  // ### Step Functions ### //
+  awslambda.NewFunction(stack, jsii.String("getDate"), &awslambda.FunctionProps{
+    Runtime: awslambda.Runtime_GO_1_X(),
+    Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/stepfunctions/get-date"), &awss3assets.AssetOptions{
+      Bundling: &awscdk.BundlingOptions{
+        Image:   awslambda.Runtime_GO_1_X().BundlingImage(),
+        Command: jsii.Strings("bash", "-c", "GOOS=linux GOARCH=amd64 go build -o /asset-output/main"),
+        User:    jsii.String("root"),
+      },
+    }),
+    Handler: jsii.String("main"),
+    Timeout: awscdk.Duration_Seconds(jsii.Number(30)),
+    //LogRetention: awslogs.RetentionDays_ONE_DAY,  disabled for local
+    Environment: &map[string]*string{},
+  })
+
   // Output
   awscdk.NewCfnOutput(stack, jsii.String("dynamoDbName"), &awscdk.CfnOutputProps{
     Value: trashNotificationTable.TableName(),
