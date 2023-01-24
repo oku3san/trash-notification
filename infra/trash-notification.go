@@ -14,6 +14,8 @@ import (
   "github.com/aws/aws-cdk-go/awscdk/v2/awss3assets"
   "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
   "github.com/aws/aws-cdk-go/awscdk/v2/awsssm"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awsstepfunctions"
+  "github.com/aws/aws-cdk-go/awscdk/v2/awsstepfunctionstasks"
   "github.com/aws/constructs-go/constructs/v10"
   "github.com/aws/jsii-runtime-go"
   "os"
@@ -240,7 +242,7 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   })
 
   // ### Step Functions ### //
-  awslambda.NewFunction(stack, jsii.String("getDate"), &awslambda.FunctionProps{
+  getDate := awslambda.NewFunction(stack, jsii.String("getDate"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
     Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/stepfunctions/get-date"), &awss3assets.AssetOptions{
       Bundling: &awscdk.BundlingOptions{
@@ -273,6 +275,20 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
       "channelSecret": jsii.String(channelSecret),
       "userId":        jsii.String(userId),
     },
+  })
+
+  init := awsstepfunctionstasks.NewLambdaInvoke(stack, jsii.String("newLambdaInvoke"), &awsstepfunctionstasks.LambdaInvokeProps{
+    Timeout:        awscdk.Duration_Seconds(jsii.Number(30)),
+    LambdaFunction: getDate,
+  })
+
+  pass := awsstepfunctions.NewPass(stack, jsii.String("PassState"), &awsstepfunctions.PassProps{})
+
+  definition := init.Next(pass)
+
+  awsstepfunctions.NewStateMachine(stack, jsii.String("StateMachine"), &awsstepfunctions.StateMachineProps{
+    Definition:       definition,
+    StateMachineType: awsstepfunctions.StateMachineType_STANDARD,
   })
 
   // Output
