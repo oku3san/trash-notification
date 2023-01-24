@@ -280,13 +280,22 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   init := awsstepfunctionstasks.NewLambdaInvoke(stack, jsii.String("newLambdaInvoke"), &awsstepfunctionstasks.LambdaInvokeProps{
     Timeout:        awscdk.Duration_Seconds(jsii.Number(30)),
     LambdaFunction: getDate,
+    OutputPath:     jsii.String("$.Payload"),
   })
 
-  pass := awsstepfunctions.NewPass(stack, jsii.String("PassState"), &awsstepfunctions.PassProps{})
+  newDynamoGetItem := awsstepfunctionstasks.NewDynamoGetItem(stack, jsii.String("newDynamoGetItem"), &awsstepfunctionstasks.DynamoGetItemProps{
+    Key: &map[string]awsstepfunctionstasks.DynamoAttributeValue{
+      "Id":       awsstepfunctionstasks.DynamoAttributeValue_FromNumber(awsstepfunctions.JsonPath_NumberAt(jsii.String("$.dayOfWeekNumber"))),
+      "DataType": awsstepfunctionstasks.DynamoAttributeValue_FromString(jsii.String("IsFinished")),
+    },
+    Table: trashNotificationTable,
+  })
 
-  definition := init.Next(pass)
+  pass := awsstepfunctions.NewPass(stack, jsii.String("passState"), &awsstepfunctions.PassProps{})
 
-  awsstepfunctions.NewStateMachine(stack, jsii.String("StateMachine"), &awsstepfunctions.StateMachineProps{
+  definition := init.Next(newDynamoGetItem).Next(pass)
+
+  awsstepfunctions.NewStateMachine(stack, jsii.String("stateMachine"), &awsstepfunctions.StateMachineProps{
     Definition:       definition,
     StateMachineType: awsstepfunctions.StateMachineType_STANDARD,
   })
