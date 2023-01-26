@@ -291,9 +291,16 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Table: trashNotificationTable,
   })
 
-  pass := awsstepfunctions.NewPass(stack, jsii.String("passState"), &awsstepfunctions.PassProps{})
+  newChoice :=
+    awsstepfunctions.NewChoice(stack, jsii.String("newChoice"), &awsstepfunctions.ChoiceProps{
+      Comment:    nil,
+      InputPath:  nil,
+      OutputPath: nil,
+    }).
+      When(awsstepfunctions.Condition_StringEquals(jsii.String("$.Item.DataValue.S"), jsii.String("False")), awsstepfunctions.NewPass(stack, jsii.String("passState"), &awsstepfunctions.PassProps{})).
+      When(awsstepfunctions.Condition_StringEquals(jsii.String("$.Item.DataValue.S"), jsii.String("True")), awsstepfunctions.NewSucceed(stack, jsii.String("succeedState"), &awsstepfunctions.SucceedProps{}))
 
-  definition := init.Next(newDynamoGetItem).Next(pass)
+  definition := init.Next(newDynamoGetItem).Next(newChoice)
 
   awsstepfunctions.NewStateMachine(stack, jsii.String("stateMachine"), &awsstepfunctions.StateMachineProps{
     Definition:       definition,
