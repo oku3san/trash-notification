@@ -292,7 +292,12 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
   choiceCheckDayOfWeekNumber :=
     awsstepfunctions.NewChoice(stack, jsii.String("Choice - Check Day of Week Number"), &awsstepfunctions.ChoiceProps{}).
       When(
-        awsstepfunctions.Condition_StringMatches(jsii.String("$.dayOfWeekNumber"), jsii.String("4")), awsstepfunctionstasks.NewDynamoGetItem(
+        awsstepfunctions.Condition_Or(
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("0")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("2")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("3")),
+        ),
+        awsstepfunctionstasks.NewDynamoGetItem(
           stack, jsii.String("DynamoDB - GetItem"), &awsstepfunctionstasks.DynamoGetItemProps{
             Key: &map[string]awsstepfunctionstasks.DynamoAttributeValue{
               "Id":       awsstepfunctionstasks.DynamoAttributeValue_FromNumber(awsstepfunctions.JsonPath_NumberAt(jsii.String("$.dayOfWeekNumber"))),
@@ -301,10 +306,16 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
             Table: trashNotificationTable,
           }).
           Next(choiceIsFinished)).
+
       When(
-        awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("5")), awsstepfunctions.NewSucceed(
-          stack, jsii.String("Success - 1"), &awsstepfunctions.SucceedProps{},
-        ))
+        awsstepfunctions.Condition_Or(
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("1")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("4")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("5")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("6")),
+        ),
+        awsstepfunctions.NewSucceed(stack, jsii.String("Success - 1"), &awsstepfunctions.SucceedProps{}),
+      )
 
   upstream := awsstepfunctionstasks.NewLambdaInvoke(stack, jsii.String("Lambda Invoke - Get Day of Week Number"), &awsstepfunctionstasks.LambdaInvokeProps{
     Timeout:        awscdk.Duration_Seconds(jsii.Number(30)),
