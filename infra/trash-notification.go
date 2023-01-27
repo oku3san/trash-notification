@@ -257,7 +257,8 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Environment: &map[string]*string{},
   })
 
-  awslambda.NewFunction(stack, jsii.String("sendMessageWithSF"), &awslambda.FunctionProps{
+  //sendMessageWithSF :=
+  sendMessageWithSF := awslambda.NewFunction(stack, jsii.String("sendMessageWithSF"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
     Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/stepfunctions/send-message-with-SF"), &awss3assets.AssetOptions{
       Bundling: &awscdk.BundlingOptions{
@@ -277,26 +278,41 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     },
   })
 
+  choiceIsFinished :=
+    awsstepfunctions.NewChoice(stack, jsii.String("Choice - Check IsFinished"), &awsstepfunctions.ChoiceProps{}).
+      When(awsstepfunctions.Condition_StringEquals(jsii.String("$.Item.DataValue.S"), jsii.String("False")), awsstepfunctionstasks.NewLambdaInvoke(stack, jsii.String("Lambda Invoke - Send Line message"), &awsstepfunctionstasks.LambdaInvokeProps{
+        Timeout:        awscdk.Duration_Seconds(jsii.Number(30)),
+        LambdaFunction: sendMessageWithSF,
+        OutputPath:     jsii.String("$.Payload"),
+      })).
+      When(awsstepfunctions.Condition_StringEquals(jsii.String("$.Item.DataValue.S"), jsii.String("True")), awsstepfunctions.NewSucceed(stack, jsii.String("Success"), &awsstepfunctions.SucceedProps{}))
+
+  //dynamoGetItem := awsstepfunctionstasks.NewDynamoGetItem(stack, jsii.String("DynamoDB - GetItem"), &awsstepfunctionstasks.DynamoGetItemProps{
+  //  Key: &map[string]awsstepfunctionstasks.DynamoAttributeValue{
+  //    "Id":       awsstepfunctionstasks.DynamoAttributeValue_FromNumber(awsstepfunctions.JsonPath_NumberAt(jsii.String("$.dayOfWeekNumber"))),
+  //    "DataType": awsstepfunctionstasks.DynamoAttributeValue_FromString(jsii.String("IsFinished")),
+  //  },
+  //  Table: trashNotificationTable,
+  //}).Next(choiceIsFinished)
+
+  choiceCheckDayOfWeekNumber :=
+    awsstepfunctions.NewChoice(stack, jsii.String("Choice - Check Day of Week Number"), &awsstepfunctions.ChoiceProps{}).
+      When(awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("4")), awsstepfunctionstasks.NewDynamoGetItem(stack, jsii.String("DynamoDB - GetItem"), &awsstepfunctionstasks.DynamoGetItemProps{
+        Key: &map[string]awsstepfunctionstasks.DynamoAttributeValue{
+          "Id":       awsstepfunctionstasks.DynamoAttributeValue_FromNumber(awsstepfunctions.JsonPath_NumberAt(jsii.String("$.dayOfWeekNumber"))),
+          "DataType": awsstepfunctionstasks.DynamoAttributeValue_FromString(jsii.String("IsFinished")),
+        },
+        Table: trashNotificationTable,
+      }).Next(choiceIsFinished)).
+      When(awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("5")), awsstepfunctions.NewSucceed(stack, jsii.String("1Success"), &awsstepfunctions.SucceedProps{}))
+
   init := awsstepfunctionstasks.NewLambdaInvoke(stack, jsii.String("Lambda Invoke - Get Day of Week Number"), &awsstepfunctionstasks.LambdaInvokeProps{
     Timeout:        awscdk.Duration_Seconds(jsii.Number(30)),
     LambdaFunction: getDate,
     OutputPath:     jsii.String("$.Payload"),
-  })
+  }).Next(choiceCheckDayOfWeekNumber)
 
-  newDynamoGetItem := awsstepfunctionstasks.NewDynamoGetItem(stack, jsii.String("DynamoDB GetItem"), &awsstepfunctionstasks.DynamoGetItemProps{
-    Key: &map[string]awsstepfunctionstasks.DynamoAttributeValue{
-      "Id":       awsstepfunctionstasks.DynamoAttributeValue_FromNumber(awsstepfunctions.JsonPath_NumberAt(jsii.String("$.dayOfWeekNumber"))),
-      "DataType": awsstepfunctionstasks.DynamoAttributeValue_FromString(jsii.String("IsFinished")),
-    },
-    Table: trashNotificationTable,
-  })
-
-  newChoice :=
-    awsstepfunctions.NewChoice(stack, jsii.String("Choice"), &awsstepfunctions.ChoiceProps{}).
-      When(awsstepfunctions.Condition_StringEquals(jsii.String("$.Item.DataValue.S"), jsii.String("False")), awsstepfunctions.NewPass(stack, jsii.String("passState"), &awsstepfunctions.PassProps{})).
-      When(awsstepfunctions.Condition_StringEquals(jsii.String("$.Item.DataValue.S"), jsii.String("True")), awsstepfunctions.NewSucceed(stack, jsii.String("Success"), &awsstepfunctions.SucceedProps{}))
-
-  definition := init.Next(newDynamoGetItem).Next(newChoice)
+  definition := init
 
   awsstepfunctions.NewStateMachine(stack, jsii.String("stateMachine"), &awsstepfunctions.StateMachineProps{
     Definition:       definition,
