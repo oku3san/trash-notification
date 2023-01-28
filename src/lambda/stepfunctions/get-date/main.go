@@ -21,10 +21,10 @@ func handler(ctx context.Context) (DayOfWeekNumber, error) {
       DayOfWeekNumber: "999",
     }, nil
   }
-  dayOfWeek := time.Now().In(jst).Weekday()
-  dayOfWeekNumberString := strconv.Itoa(int(dayOfWeek))
+  tomorrow := time.Now().AddDate(0, 0, 1).In(jst).Weekday()
+  tomorrowNumberString := strconv.Itoa(int(tomorrow))
   return DayOfWeekNumber{
-    DayOfWeekNumber: dayOfWeekNumberString,
+    DayOfWeekNumber: tomorrowNumberString,
   }, nil
 }
 

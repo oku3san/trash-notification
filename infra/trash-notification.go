@@ -257,7 +257,6 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     Environment: &map[string]*string{},
   })
 
-  //sendMessageWithSF :=
   sendMessageWithSF := awslambda.NewFunction(stack, jsii.String("sendMessageWithSF"), &awslambda.FunctionProps{
     Runtime: awslambda.Runtime_GO_1_X(),
     Code: awslambda.AssetCode_FromAsset(jsii.String("./../src/lambda/stepfunctions/send-message-with-SF"), &awss3assets.AssetOptions{
