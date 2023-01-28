@@ -23,6 +23,7 @@ func handler(ctx context.Context) (DayOfWeekNumber, error) {
   }
   tomorrow := time.Now().AddDate(0, 0, 1).In(jst).Weekday()
   tomorrowNumberString := strconv.Itoa(int(tomorrow))
+  log.Printf("明日は %s で番号は %s", tomorrow, tomorrowNumberString)
   return DayOfWeekNumber{
     DayOfWeekNumber: tomorrowNumberString,
   }, nil
