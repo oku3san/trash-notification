@@ -54,7 +54,7 @@ type TrashData struct {
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
   // 曜日の番号を取得
-  dayOfWeekNumber := getDayOfWeek()
+  tomorrowNumber := tomorrow()
 
   // DynamoDB 接続の初期設定
   var endpoint string
@@ -81,12 +81,12 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
     message := sqsMessageFromLine.Events[0].Message.Text
 
     if message == "はい" {
-      t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "True", UpdatedAt: int(time.Now().Unix())}
+      t := TrashData{Id: tomorrowNumber, DataType: "IsFinished", DataValue: "True", UpdatedAt: int(time.Now().Unix())}
       if err := table.Put(t).Run(); err != nil {
         fmt.Printf("failed to put item[%v]\n", err)
       }
     } else if message == "いいえ" {
-      t := TrashData{Id: dayOfWeekNumber, DataType: "IsFinished", DataValue: "False", UpdatedAt: int(time.Now().Unix())}
+      t := TrashData{Id: tomorrowNumber, DataType: "IsFinished", DataValue: "False", UpdatedAt: int(time.Now().Unix())}
       if err := table.Put(t).Run(); err != nil {
         fmt.Printf("failed to put item[%v]\n", err)
       }
@@ -102,13 +102,13 @@ func main() {
   lambda.Start(handler)
 }
 
-func getDayOfWeek() int {
+func tomorrow() int {
   jst, err := time.LoadLocation("Asia/Tokyo")
   if err != nil {
     fmt.Println(err)
   }
-  dayOfWeek := time.Now().In(jst).Weekday()
-  dayOfWeekNumber := int(dayOfWeek)
+  tomorrow := time.Now().AddDate(0, 0, 1).In(jst).Weekday()
+  tomorrowNumber := int(tomorrow)
 
-  return dayOfWeekNumber
+  return tomorrowNumber
 }
