@@ -292,9 +292,9 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
     awsstepfunctions.NewChoice(stack, jsii.String("Choice - Check Day of Week Number"), &awsstepfunctions.ChoiceProps{}).
       When(
         awsstepfunctions.Condition_Or(
-          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("0")),
-          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("2")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("1")),
           awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("3")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("4")),
         ),
         awsstepfunctionstasks.NewDynamoGetItem(
           stack, jsii.String("DynamoDB - GetItem"), &awsstepfunctionstasks.DynamoGetItemProps{
@@ -308,8 +308,8 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
       When(
         awsstepfunctions.Condition_Or(
-          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("1")),
-          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("4")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("0")),
+          awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("2")),
           awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("5")),
           awsstepfunctions.Condition_StringEquals(jsii.String("$.dayOfWeekNumber"), jsii.String("6")),
         ),
