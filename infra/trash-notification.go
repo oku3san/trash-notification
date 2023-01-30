@@ -324,9 +324,21 @@ func NewTrashNotificationStack(scope constructs.Construct, id string, props *Tra
 
   definition := upstream
 
-  awsstepfunctions.NewStateMachine(stack, jsii.String("stateMachine"), &awsstepfunctions.StateMachineProps{
+  stateMachine := awsstepfunctions.NewStateMachine(stack, jsii.String("stateMachine"), &awsstepfunctions.StateMachineProps{
     Definition:       definition,
     StateMachineType: awsstepfunctions.StateMachineType_STANDARD,
+  })
+
+  // 毎日0時に Lambda を実行する Event Bridge
+  awsevents.NewRule(stack, jsii.String("check"), &awsevents.RuleProps{
+    Enabled: jsii.Bool(true),
+    Schedule: awsevents.Schedule_Cron(&awsevents.CronOptions{
+      Hour:   jsii.String("13-14"),
+      Minute: jsii.String("0,30"),
+    }),
+    Targets: &[]awsevents.IRuleTarget{
+      awseventstargets.NewSfnStateMachine(stateMachine, &awseventstargets.SfnStateMachineProps{}),
+    },
   })
 
   // Output
